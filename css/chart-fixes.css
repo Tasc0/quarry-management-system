@@ -1,0 +1,81 @@
+
+/* Chart Distortion Fixes - Applied by Pipedream */
+
+/* Base chart container fixes */
+.chart-container, .production-chart, .monthly-chart {
+  width: 800px !important;
+  height: 400px !important;
+  max-width: 800px !important;
+  max-height: 400px !important;
+  min-width: 800px !important;
+  min-height: 400px !important;
+  position: relative !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  resize: none !important;
+}
+
+/* Specific chart type fixes */
+.production-chart,
+.monthly-production-chart,
+#productionChart,
+#monthlyChart {
+  width: 800px !important;
+  height: 400px !important;
+  display: block !important;
+  flex-shrink: 0 !important;
+}
+
+/* Canvas and SVG fixes */
+.chart-container, .production-chart, .monthly-chart canvas,
+.chart-container, .production-chart, .monthly-chart svg {
+  width: 800px !important;
+  height: 400px !important;
+  max-width: none !important;
+  max-height: none !important;
+}
+
+/* Chart.js specific fixes */
+.chartjs-render-monitor {
+  width: 800px !important;
+  height: 400px !important;
+  position: relative !important;
+}
+
+/* D3.js specific fixes */
+.d3-chart,
+.d3-chart svg {
+  width: 800px !important;
+  height: 400px !important;
+}
+
+/* Prevent responsive behavior */
+.chart-responsive,
+.chart-container.responsive {
+  width: 800px !important;
+  height: 400px !important;
+}
+
+/* Parent container fixes */
+.chart-wrapper,
+.chart-parent {
+  width: 800px !important;
+  height: 400px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+/* Disable chart animations that cause distortion */
+.chart-no-animation * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Media query overrides */
+@media screen and (max-width: 768px) {
+  .chart-container, .production-chart, .monthly-chart {
+    width: 600px !important;
+    height: 300px !important;
+  }
+}
