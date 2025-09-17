@@ -3,142 +3,304 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestão de Pedreira - Dashboard</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://apis.google.com/js/api.js"></script>
+    <title>Sistema de Gestão de Pedreira - 2025</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🏔️ Sistema de Gestão de Pedreira</h1>
-            <div class="header-controls">
-                <button id="refreshData" class="btn-primary">🔄 Atualizar Dados</button>
-                <button id="exportReport" class="btn-secondary">📊 Exportar Relatório</button>
-            </div>
-        </header>
-
-        <div class="dashboard-grid">
-            <!-- Estoque de Pedras -->
-            <div class="card">
-                <h2>📦 Estoque de Pedras</h2>
-                <div class="stock-grid">
-                    <div class="stock-item">
-                        <h3>Brita 0</h3>
-                        <div class="stock-value" id="brita0-stock">0</div>
-                        <div class="stock-unit">toneladas</div>
-                    </div>
-                    <div class="stock-item">
-                        <h3>Brita 1</h3>
-                        <div class="stock-value" id="brita1-stock">0</div>
-                        <div class="stock-unit">toneladas</div>
-                    </div>
-                    <div class="stock-item">
-                        <h3>Pedrisco</h3>
-                        <div class="stock-value" id="pedrisco-stock">0</div>
-                        <div class="stock-unit">toneladas</div>
-                    </div>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="bi bi-diamond-fill"></i>
+                    <span>QuarryPro</span>
                 </div>
             </div>
-
-            <!-- Custo de Produção -->
-            <div class="card">
-                <h2>💰 Custo de Produção</h2>
-                <canvas id="productionCostChart"></canvas>
-                <div class="metric">
-                    <span>Custo/Tonelada:</span>
-                    <span id="costPerTon">R$ 0,00</span>
-                </div>
+            
+            <div class="sidebar-menu">
+                <a href="#dashboard" class="menu-item active" data-section="dashboard">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#estoque" class="menu-item" data-section="estoque">
+                    <i class="bi bi-boxes"></i>
+                    <span>Estoque de Pedras</span>
+                </a>
+                <a href="#producao" class="menu-item" data-section="producao">
+                    <i class="bi bi-gear-fill"></i>
+                    <span>Produção</span>
+                </a>
+                <a href="#equipamentos" class="menu-item" data-section="equipamentos">
+                    <i class="bi bi-truck"></i>
+                    <span>Equipamentos</span>
+                </a>
+                <a href="#financeiro" class="menu-item" data-section="financeiro">
+                    <i class="bi bi-graph-up"></i>
+                    <span>Financeiro</span>
+                </a>
+                <a href="#roi" class="menu-item" data-section="roi">
+                    <i class="bi bi-calculator"></i>
+                    <span>Análise ROI</span>
+                </a>
             </div>
+        </nav>
 
-            <!-- ROI e Empréstimos -->
-            <div class="card">
-                <h2>📈 ROI e Empréstimos</h2>
-                <div class="roi-metrics">
-                    <div class="metric">
-                        <span>ROI Atual:</span>
-                        <span id="currentRoi">0%</span>
-                    </div>
-                    <div class="metric">
-                        <span>Empréstimos Ativos:</span>
-                        <span id="activeLoans">R$ 0,00</span>
-                    </div>
-                    <div class="metric">
-                        <span>Retorno Esperado:</span>
-                        <span id="expectedReturn">R$ 0,00</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Fluxo de Caixa -->
-            <div class="card full-width">
-                <h2>💳 Fluxo de Caixa</h2>
-                <canvas id="cashFlowChart"></canvas>
-            </div>
-
-            <!-- Depreciação de Equipamentos -->
-            <div class="card">
-                <h2>🚜 Depreciação de Equipamentos</h2>
-                <div class="equipment-list">
-                    <div class="equipment-item">
-                        <span>Carregadeiras</span>
-                        <span id="loaders-depreciation">R$ 0,00</span>
-                    </div>
-                    <div class="equipment-item">
-                        <span>Caminhões</span>
-                        <span id="trucks-depreciation">R$ 0,00</span>
-                    </div>
-                    <div class="equipment-item">
-                        <span>Escavadeiras</span>
-                        <span id="excavators-depreciation">R$ 0,00</span>
-                    </div>
-                    <div class="equipment-item">
-                        <span>Britador Primário</span>
-                        <span id="primary-crusher-depreciation">R$ 0,00</span>
-                    </div>
-                    <div class="equipment-item">
-                        <span>Britador Secundário</span>
-                        <span id="secondary-crusher-depreciation">R$ 0,00</span>
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <div class="header-content">
+                    <h1 class="page-title">Dashboard</h1>
+                    <div class="header-actions">
+                        <button class="btn-icon" id="notifications">
+                            <i class="bi bi-bell"></i>
+                            <span class="notification-badge">3</span>
+                        </button>
+                        <div class="user-profile">
+                            <img src="https://via.placeholder.com/40" alt="Profile">
+                            <span>Admin</span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </header>
 
-            <!-- Custos de Manutenção -->
-            <div class="card">
-                <h2>🔧 Custos de Manutenção</h2>
-                <canvas id="maintenanceChart"></canvas>
-                <div class="metric">
-                    <span>Impacto no Fluxo:</span>
-                    <span id="maintenanceImpact">R$ 0,00</span>
+            <!-- Dashboard Section -->
+            <section class="content-section active" id="dashboard">
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="bi bi-boxes"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>Estoque Total</h3>
+                            <p class="metric-value">12,450 m³</p>
+                            <span class="metric-change positive">+5.2%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="bi bi-currency-dollar"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>Receita Mensal</h3>
+                            <p class="metric-value">R$ 245,680</p>
+                            <span class="metric-change positive">+12.8%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>ROI Médio</h3>
+                            <p class="metric-value">18.5%</p>
+                            <span class="metric-change positive">+2.1%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-icon">
+                            <i class="bi bi-truck"></i>
+                        </div>
+                        <div class="metric-content">
+                            <h3>Equipamentos Ativos</h3>
+                            <p class="metric-value">24/26</p>
+                            <span class="metric-change neutral">92%</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Vendas vs Metas -->
-            <div class="card full-width">
-                <h2>🎯 Vendas vs Metas</h2>
-                <canvas id="salesTargetChart"></canvas>
-                <div class="targets-grid">
-                    <div class="target-item">
-                        <span>Meta Financeira:</span>
-                        <span id="financialTarget">R$ 0,00</span>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Produção Mensal</h3>
+                        <canvas id="productionChart"></canvas>
                     </div>
-                    <div class="target-item">
-                        <span>Meta Produção:</span>
-                        <span id="productionTarget">0 ton</span>
-                    </div>
-                    <div class="target-item">
-                        <span>Atingido Financeiro:</span>
-                        <span id="financialAchieved">R$ 0,00</span>
-                    </div>
-                    <div class="target-item">
-                        <span>Atingido Produção:</span>
-                        <span id="productionAchieved">0 ton</span>
+                    <div class="chart-card">
+                        <h3>Fluxo de Caixa</h3>
+                        <canvas id="cashFlowChart"></canvas>
                     </div>
                 </div>
+            </section>
+
+            <!-- Estoque Section -->
+            <section class="content-section" id="estoque">
+                <div class="section-header">
+                    <h2>Estoque de Pedras</h2>
+                    <button class="btn-primary" id="addStone">
+                        <i class="bi bi-plus"></i>
+                        Adicionar Tipo
+                    </button>
+                </div>
+                
+                <div class="table-card">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Tipo de Pedra</th>
+                                <th>Quantidade (m³)</th>
+                                <th>Valor/m³</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="stone-type">
+                                        <div class="stone-color granite"></div>
+                                        Granito Cinza
+                                    </div>
+                                </td>
+                                <td>3,245</td>
+                                <td>R$ 45,00</td>
+                                <td>R$ 146,025</td>
+                                <td><span class="status-badge high">Alto</span></td>
+                                <td>
+                                    <button class="btn-icon-small"><i class="bi bi-pencil"></i></button>
+                                    <button class="btn-icon-small"><i class="bi bi-trash"></i></button>
+                                </td>
+                            </tr>
+                            <!-- More rows would be added dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Production Section -->
+            <section class="content-section" id="producao">
+                <div class="section-header">
+                    <h2>Controle de Produção</h2>
+                    <button class="btn-primary">
+                        <i class="bi bi-plus"></i>
+                        Nova Produção
+                    </button>
+                </div>
+                
+                <div class="production-grid">
+                    <div class="production-card">
+                        <h3>Custos de Produção</h3>
+                        <div class="cost-breakdown">
+                            <div class="cost-item">
+                                <span>Combustível</span>
+                                <span>R$ 12,450</span>
+                            </div>
+                            <div class="cost-item">
+                                <span>Mão de Obra</span>
+                                <span>R$ 28,900</span>
+                            </div>
+                            <div class="cost-item">
+                                <span>Equipamentos</span>
+                                <span>R$ 8,750</span>
+                            </div>
+                            <div class="cost-item total">
+                                <span>Total</span>
+                                <span>R$ 50,100</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Equipment Section -->
+            <section class="content-section" id="equipamentos">
+                <div class="section-header">
+                    <h2>Gestão de Equipamentos</h2>
+                    <button class="btn-primary">
+                        <i class="bi bi-plus"></i>
+                        Adicionar Equipamento
+                    </button>
+                </div>
+                
+                <div class="equipment-grid">
+                    <div class="equipment-card">
+                        <div class="equipment-status active"></div>
+                        <div class="equipment-icon">
+                            <i class="bi bi-truck"></i>
+                        </div>
+                        <h3>Escavadeira #001</h3>
+                        <p>Caterpillar 320D</p>
+                        <div class="equipment-stats">
+                            <span>Horas: 2,145</span>
+                            <span>Eficiência: 94%</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Financial Section -->
+            <section class="content-section" id="financeiro">
+                <div class="section-header">
+                    <h2>Gestão Financeira</h2>
+                    <div class="period-selector">
+                        <select class="modern-select">
+                            <option>Último mês</option>
+                            <option>Últimos 3 meses</option>
+                            <option>Último ano</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="financial-overview">
+                    <div class="financial-card">
+                        <h3>Fluxo de Caixa</h3>
+                        <canvas id="cashFlowDetailChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ROI Analysis Section -->
+            <section class="content-section" id="roi">
+                <div class="section-header">
+                    <h2>Análise de ROI</h2>
+                    <button class="btn-primary">
+                        <i class="bi bi-calculator"></i>
+                        Calcular ROI
+                    </button>
+                </div>
+                
+                <div class="roi-grid">
+                    <div class="roi-card">
+                        <h3>ROI por Período</h3>
+                        <div class="roi-chart">
+                            <canvas id="roiChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for adding items -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Adicionar Item</h3>
+                <button class="btn-close"><i class="bi bi-x"></i></button>
+            </div>
+            <div class="modal-content">
+                <form class="modern-form">
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" class="form-input" placeholder="Digite o nome">
+                    </div>
+                    <div class="form-group">
+                        <label>Quantidade</label>
+                        <input type="number" class="form-input" placeholder="Digite a quantidade">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn-secondary">Cancelar</button>
+                        <button type="submit" class="btn-primary">Adicionar</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
