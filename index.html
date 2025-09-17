@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Pedreira - Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏔️ Sistema de Gestão de Pedreira</h1>
+            <div class="header-controls">
+                <button id="refreshData" class="btn-primary">🔄 Atualizar Dados</button>
+                <button id="exportReport" class="btn-secondary">📊 Exportar Relatório</button>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Estoque de Pedras -->
+            <div class="card">
+                <h2>📦 Estoque de Pedras</h2>
+                <div class="stock-grid">
+                    <div class="stock-item">
+                        <h3>Brita 0</h3>
+                        <div class="stock-value" id="brita0-stock">0</div>
+                        <div class="stock-unit">toneladas</div>
+                    </div>
+                    <div class="stock-item">
+                        <h3>Brita 1</h3>
+                        <div class="stock-value" id="brita1-stock">0</div>
+                        <div class="stock-unit">toneladas</div>
+                    </div>
+                    <div class="stock-item">
+                        <h3>Pedrisco</h3>
+                        <div class="stock-value" id="pedrisco-stock">0</div>
+                        <div class="stock-unit">toneladas</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custo de Produção -->
+            <div class="card">
+                <h2>💰 Custo de Produção</h2>
+                <canvas id="productionCostChart"></canvas>
+                <div class="metric">
+                    <span>Custo/Tonelada:</span>
+                    <span id="costPerTon">R$ 0,00</span>
+                </div>
+            </div>
+
+            <!-- ROI e Empréstimos -->
+            <div class="card">
+                <h2>📈 ROI e Empréstimos</h2>
+                <div class="roi-metrics">
+                    <div class="metric">
+                        <span>ROI Atual:</span>
+                        <span id="currentRoi">0%</span>
+                    </div>
+                    <div class="metric">
+                        <span>Empréstimos Ativos:</span>
+                        <span id="activeLoans">R$ 0,00</span>
+                    </div>
+                    <div class="metric">
+                        <span>Retorno Esperado:</span>
+                        <span id="expectedReturn">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fluxo de Caixa -->
+            <div class="card full-width">
+                <h2>💳 Fluxo de Caixa</h2>
+                <canvas id="cashFlowChart"></canvas>
+            </div>
+
+            <!-- Depreciação de Equipamentos -->
+            <div class="card">
+                <h2>🚜 Depreciação de Equipamentos</h2>
+                <div class="equipment-list">
+                    <div class="equipment-item">
+                        <span>Carregadeiras</span>
+                        <span id="loaders-depreciation">R$ 0,00</span>
+                    </div>
+                    <div class="equipment-item">
+                        <span>Caminhões</span>
+                        <span id="trucks-depreciation">R$ 0,00</span>
+                    </div>
+                    <div class="equipment-item">
+                        <span>Escavadeiras</span>
+                        <span id="excavators-depreciation">R$ 0,00</span>
+                    </div>
+                    <div class="equipment-item">
+                        <span>Britador Primário</span>
+                        <span id="primary-crusher-depreciation">R$ 0,00</span>
+                    </div>
+                    <div class="equipment-item">
+                        <span>Britador Secundário</span>
+                        <span id="secondary-crusher-depreciation">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custos de Manutenção -->
+            <div class="card">
+                <h2>🔧 Custos de Manutenção</h2>
+                <canvas id="maintenanceChart"></canvas>
+                <div class="metric">
+                    <span>Impacto no Fluxo:</span>
+                    <span id="maintenanceImpact">R$ 0,00</span>
+                </div>
+            </div>
+
+            <!-- Vendas vs Metas -->
+            <div class="card full-width">
+                <h2>🎯 Vendas vs Metas</h2>
+                <canvas id="salesTargetChart"></canvas>
+                <div class="targets-grid">
+                    <div class="target-item">
+                        <span>Meta Financeira:</span>
+                        <span id="financialTarget">R$ 0,00</span>
+                    </div>
+                    <div class="target-item">
+                        <span>Meta Produção:</span>
+                        <span id="productionTarget">0 ton</span>
+                    </div>
+                    <div class="target-item">
+                        <span>Atingido Financeiro:</span>
+                        <span id="financialAchieved">R$ 0,00</span>
+                    </div>
+                    <div class="target-item">
+                        <span>Atingido Produção:</span>
+                        <span id="productionAchieved">0 ton</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
