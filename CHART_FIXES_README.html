@@ -1,0 +1,22 @@
+
+<!-- Chart Distortion Fixes Implementation -->
+<!-- Add these lines to your HTML files that contain charts -->
+
+<!-- Add to <head> section -->
+<link rel="stylesheet" href="css/chart-fixes.css">
+
+<!-- Add before closing </body> tag -->
+<script src="js/chart-fixes.js"></script>
+
+<!-- For immediate fix, add this class to problematic chart containers -->
+<div class="chart-container chart-no-animation">
+  <!-- Your chart content here -->
+</div>
+
+<!-- Manual fix trigger (if needed) -->
+<script>
+  // Call this after creating new charts
+  if (window.fixChartDimensions) {
+    window.fixChartDimensions();
+  }
+</script>
