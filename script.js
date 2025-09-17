@@ -1,455 +1,430 @@
-// Configurações do Google Sheets API
-const GOOGLE_SHEETS_API_KEY = 'YOUR_API_KEY_HERE';
-const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE';
+// Modern Quarry Management System JavaScript - 2025
 
-// Classe principal do sistema de gestão
 class QuarryManagementSystem {
     constructor() {
-        this.data = {};
+        this.currentSection = 'dashboard';
         this.charts = {};
         this.init();
     }
 
-    async init() {
-        await this.loadGoogleSheetsAPI();
+    init() {
         this.setupEventListeners();
-        this.createCharts();
-        await this.refreshData();
-    }
-
-    async loadGoogleSheetsAPI() {
-        return new Promise((resolve) => {
-            if (typeof gapi !== 'undefined') {
-                gapi.load('client', () => {
-                    gapi.client.init({
-                        apiKey: GOOGLE_SHEETS_API_KEY,
-                        discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
-                    }).then(resolve);
-                });
-            } else {
-                console.warn('Google API não carregada. Usando dados simulados.');
-                resolve();
-            }
-        });
+        this.initializeCharts();
+        this.showSection('dashboard');
+        this.startDataUpdates();
     }
 
     setupEventListeners() {
-        document.getElementById('refreshData').addEventListener('click', () => {
-            this.refreshData();
+        // Navigation
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = item.dataset.section;
+                this.showSection(section);
+            });
         });
 
-        document.getElementById('exportReport').addEventListener('click', () => {
-            this.exportReport();
+        // Modal functionality
+        document.querySelectorAll('[id^="add"]').forEach(btn => {
+            btn.addEventListener('click', () => this.openModal());
         });
 
-        // Auto-refresh a cada 5 minutos
-        setInterval(() => {
-            this.refreshData();
-        }, 5 * 60 * 1000);
+        document.querySelector('.btn-close')?.addEventListener('click', () => this.closeModal());
+        document.querySelector('#modalOverlay')?.addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) this.closeModal();
+        });
+
+        // Form submissions
+        document.querySelector('.modern-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleFormSubmit(e);
+        });
+
+        // Notifications
+        document.querySelector('#notifications')?.addEventListener('click', () => {
+            this.showNotifications();
+        });
     }
 
-    async refreshData() {
-        try {
-            // Tenta carregar dados do Google Sheets
-            await this.loadDataFromSheets();
-        } catch (error) {
-            console.warn('Erro ao carregar do Google Sheets, usando dados simulados:', error);
-            this.loadSimulatedData();
+    showSection(sectionId) {
+        // Update navigation
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+
+        // Update content
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.classList.remove('active');
+        });
+        document.querySelector(`#${sectionId}`).classList.add('active');
+
+        // Update page title
+        const titles = {
+            dashboard: 'Dashboard',
+            estoque: 'Estoque de Pedras',
+            producao: 'Controle de Produção',
+            equipamentos: 'Gestão de Equipamentos',
+            financeiro: 'Gestão Financeira',
+            roi: 'Análise de ROI'
+        };
+        document.querySelector('.page-title').textContent = titles[sectionId];
+
+        this.currentSection = sectionId;
+        this.updateCharts(sectionId);
+    }
+
+    initializeCharts() {
+        // Production Chart
+        const productionCtx = document.getElementById('productionChart');
+        if (productionCtx) {
+            this.charts.production = new Chart(productionCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                    datasets: [{
+                        label: 'Produção (m³)',
+                        data: [2100, 2300, 2150, 2400, 2250, 2500],
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
         }
-        this.updateUI();
+
+        // Cash Flow Chart
+        const cashFlowCtx = document.getElementById('cashFlowChart');
+        if (cashFlowCtx) {
+            this.charts.cashFlow = new Chart(cashFlowCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                    datasets: [{
+                        label: 'Entrada',
+                        data: [180000, 220000, 195000, 245000, 210000, 268000],
+                        backgroundColor: '#10b981',
+                        borderRadius: 8
+                    }, {
+                        label: 'Saída',
+                        data: [120000, 145000, 135000, 165000, 155000, 178000],
+                        backgroundColor: '#ef4444',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ROI Chart
+        const roiCtx = document.getElementById('roiChart');
+        if (roiCtx) {
+            this.charts.roi = new Chart(roiCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['ROI Positivo', 'ROI Neutro', 'ROI Negativo'],
+                    datasets: [{
+                        data: [75, 18, 7],
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Detailed Cash Flow Chart
+        const cashFlowDetailCtx = document.getElementById('cashFlowDetailChart');
+        if (cashFlowDetailCtx) {
+            this.charts.cashFlowDetail = new Chart(cashFlowDetailCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 30}, (_, i) => i + 1),
+                    datasets: [{
+                        label: 'Fluxo Diário',
+                        data: this.generateRandomData(30, 5000, 15000),
+                        borderColor: '#06b6d4',
+                        backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
     }
 
-    async loadDataFromSheets() {
-        const ranges = [
-            'Estoque!A:C',
-            'Custos!A:E', 
-            'ROI!A:D',
-            'FluxoCaixa!A:F',
-            'Equipamentos!A:E',
-            'Manutencao!A:D',
-            'Vendas!A:G'
+    generateRandomData(length, min, max) {
+        return Array.from({length}, () => Math.floor(Math.random() * (max - min + 1)) + min);
+    }
+
+    updateCharts(section) {
+        // Update chart data based on current section
+        if (section === 'dashboard' && this.charts.production) {
+            // Simulate real-time data update
+            const newData = this.generateRandomData(6, 2000, 2600);
+            this.charts.production.data.datasets[0].data = newData;
+            this.charts.production.update('none');
+        }
+    }
+
+    openModal() {
+        const modal = document.getElementById('modalOverlay');
+        if (modal) {
+            modal.classList.add('active');
+            // Focus first input
+            const firstInput = modal.querySelector('input');
+            if (firstInput) {
+                setTimeout(() => firstInput.focus(), 100);
+            }
+        }
+    }
+
+    closeModal() {
+        const modal = document.getElementById('modalOverlay');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
+
+    handleFormSubmit(e) {
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        
+        // Simulate API call
+        this.showLoading(true);
+        
+        setTimeout(() => {
+            this.showLoading(false);
+            this.closeModal();
+            this.showNotification('Item adicionado com sucesso!', 'success');
+            
+            // Reset form
+            e.target.reset();
+        }, 1000);
+    }
+
+    showLoading(show) {
+        const submitBtn = document.querySelector('.modal form .btn-primary');
+        if (submitBtn) {
+            if (show) {
+                submitBtn.classList.add('loading');
+                submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Salvando...';
+            } else {
+                submitBtn.classList.remove('loading');
+                submitBtn.innerHTML = '<i class="bi bi-plus"></i> Adicionar';
+            }
+        }
+    }
+
+    showNotification(message, type = 'info') {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>${message}</span>
+            </div>
+        `;
+
+        // Add notification styles
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+            border-left: 4px solid #10b981;
+        `;
+
+        document.body.appendChild(notification);
+
+        // Animate in
+        setTimeout(() => {
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+
+        // Auto remove
+        setTimeout(() => {
+            notification.style.transform = 'translateX(400px)';
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+
+    showNotifications() {
+        const notifications = [
+            { message: 'Equipamento #003 necessita manutenção', type: 'warning', time: '5 min' },
+            { message: 'Estoque de granito baixo', type: 'alert', time: '15 min' },
+            { message: 'Produção mensal bateu a meta', type: 'success', time: '1 hora' }
         ];
 
-        const responses = await Promise.all(
-            ranges.map(range => 
-                gapi.client.sheets.spreadsheets.values.get({
-                    spreadsheetId: SPREADSHEET_ID,
-                    range: range,
-                })
-            )
-        );
-
-        this.data = {
-            stock: this.parseStockData(responses[0].result.values),
-            costs: this.parseCostData(responses[1].result.values),
-            roi: this.parseROIData(responses[2].result.values),
-            cashFlow: this.parseCashFlowData(responses[3].result.values),
-            equipment: this.parseEquipmentData(responses[4].result.values),
-            maintenance: this.parseMaintenanceData(responses[5].result.values),
-            sales: this.parseSalesData(responses[6].result.values)
-        };
+        // Create notifications dropdown (simplified)
+        this.showNotification('3 notificações pendentes', 'info');
     }
 
-    loadSimulatedData() {
-        this.data = {
-            stock: {
-                brita0: 1250,
-                brita1: 980,
-                pedrisco: 750
-            },
-            costs: {
-                costPerTon: 45.80,
-                monthlyData: [42.5, 44.2, 43.8, 45.1, 45.8, 46.2]
-            },
-            roi: {
-                current: 15.5,
-                activeLoans: 850000,
-                expectedReturn: 1200000
-            },
-            cashFlow: {
-                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
-                income: [450000, 520000, 480000, 560000, 590000, 620000],
-                expenses: [320000, 380000, 350000, 410000, 420000, 450000]
-            },
-            equipment: {
-                loaders: 125000,
-                trucks: 89000,
-                excavators: 156000,
-                primaryCrusher: 45000,
-                secondaryCrusher: 38000
-            },
-            maintenance: {
-                monthly: [25000, 32000, 28000, 35000, 42000, 38000],
-                impact: -85000
-            },
-            sales: {
-                financialTarget: 3500000,
-                productionTarget: 12000,
-                financialAchieved: 3120000,
-                productionAchieved: 10850,
-                monthlyData: [520000, 480000, 560000, 590000, 620000, 650000]
-            }
-        };
+    startDataUpdates() {
+        // Simulate real-time data updates
+        setInterval(() => {
+            this.updateMetrics();
+        }, 30000); // Update every 30 seconds
     }
 
-    parseStockData(values) {
-        const data = { brita0: 0, brita1: 0, pedrisco: 0 };
-        if (values && values.length > 1) {
-            values.slice(1).forEach(row => {
-                if (row[0]) {
-                    const type = row[0].toLowerCase().replace(' ', '');
-                    data[type] = parseFloat(row[1]) || 0;
-                }
-            });
-        }
-        return data;
-    }
-
-    parseCostData(values) {
-        const data = { costPerTon: 0, monthlyData: [] };
-        if (values && values.length > 1) {
-            values.slice(1).forEach(row => {
-                if (row[1]) data.monthlyData.push(parseFloat(row[1]) || 0);
-            });
-            data.costPerTon = data.monthlyData[data.monthlyData.length - 1] || 0;
-        }
-        return data;
-    }
-
-    parseROIData(values) {
-        const data = { current: 0, activeLoans: 0, expectedReturn: 0 };
-        if (values && values.length > 1) {
-            const row = values[1];
-            data.current = parseFloat(row[0]) || 0;
-            data.activeLoans = parseFloat(row[1]) || 0;
-            data.expectedReturn = parseFloat(row[2]) || 0;
-        }
-        return data;
-    }
-
-    parseCashFlowData(values) {
-        const data = { labels: [], income: [], expenses: [] };
-        if (values && values.length > 1) {
-            values.slice(1).forEach(row => {
-                if (row[0]) {
-                    data.labels.push(row[0]);
-                    data.income.push(parseFloat(row[1]) || 0);
-                    data.expenses.push(parseFloat(row[2]) || 0);
-                }
-            });
-        }
-        return data;
-    }
-
-    parseEquipmentData(values) {
-        const data = {};
-        if (values && values.length > 1) {
-            values.slice(1).forEach(row => {
-                if (row[0] && row[1]) {
-                    const key = row[0].toLowerCase().replace(/[^a-z]/g, '');
-                    data[key] = parseFloat(row[1]) || 0;
-                }
-            });
-        }
-        return data;
-    }
-
-    parseMaintenanceData(values) {
-        const data = { monthly: [], impact: 0 };
-        if (values && values.length > 1) {
-            values.slice(1).forEach(row => {
-                if (row[1]) data.monthly.push(parseFloat(row[1]) || 0);
-            });
-            data.impact = data.monthly.reduce((sum, val) => sum - val, 0);
-        }
-        return data;
-    }
-
-    parseSalesData(values) {
-        const data = {
-            financialTarget: 0,
-            productionTarget: 0,
-            financialAchieved: 0,
-            productionAchieved: 0,
-            monthlyData: []
-        };
-        if (values && values.length > 1) {
-            const totals = values[1];
-            data.financialTarget = parseFloat(totals[0]) || 0;
-            data.productionTarget = parseFloat(totals[1]) || 0;
-            data.financialAchieved = parseFloat(totals[2]) || 0;
-            data.productionAchieved = parseFloat(totals[3]) || 0;
-            
-            values.slice(2).forEach(row => {
-                if (row[4]) data.monthlyData.push(parseFloat(row[4]) || 0);
-            });
-        }
-        return data;
-    }
-
-    updateUI() {
-        // Atualizar estoque
-        document.getElementById('brita0-stock').textContent = this.data.stock.brita0.toLocaleString('pt-BR');
-        document.getElementById('brita1-stock').textContent = this.data.stock.brita1.toLocaleString('pt-BR');
-        document.getElementById('pedrisco-stock').textContent = this.data.stock.pedrisco.toLocaleString('pt-BR');
-
-        // Atualizar custos
-        document.getElementById('costPerTon').textContent = 
-            this.data.costs.costPerTon.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-        // Atualizar ROI
-        document.getElementById('currentRoi').textContent = this.data.roi.current + '%';
-        document.getElementById('activeLoans').textContent = 
-            this.data.roi.activeLoans.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        document.getElementById('expectedReturn').textContent = 
-            this.data.roi.expectedReturn.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-        // Atualizar depreciação de equipamentos
-        document.getElementById('loaders-depreciation').textContent = 
-            this.data.equipment.loaders.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        document.getElementById('trucks-depreciation').textContent = 
-            this.data.equipment.trucks.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        document.getElementById('excavators-depreciation').textContent = 
-            this.data.equipment.excavators.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        document.getElementById('primary-crusher-depreciation').textContent = 
-            this.data.equipment.primaryCrusher.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        document.getElementById('secondary-crusher-depreciation').textContent = 
-            this.data.equipment.secondaryCrusher.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-        // Atualizar manutenção
-        document.getElementById('maintenanceImpact').textContent = 
-            this.data.maintenance.impact.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-        // Atualizar vendas vs metas
-        document.getElementById('financialTarget').textContent = 
-            this.data.sales.financialTarget.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        document.getElementById('productionTarget').textContent = 
-            this.data.sales.productionTarget.toLocaleString('pt-BR') + ' ton';
-        document.getElementById('financialAchieved').textContent = 
-            this.data.sales.financialAchieved.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        document.getElementById('productionAchieved').textContent = 
-            this.data.sales.productionAchieved.toLocaleString('pt-BR') + ' ton';
-
-        // Atualizar gráficos
-        this.updateCharts();
-    }
-
-    createCharts() {
-        // Gráfico de custo de produção
-        const productionCostCtx = document.getElementById('productionCostChart').getContext('2d');
-        this.charts.productionCost = new Chart(productionCostCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
-                datasets: [{
-                    label: 'Custo por Tonelada (R$)',
-                    data: [],
-                    borderColor: '#4facfe',
-                    backgroundColor: 'rgba(79, 172, 254, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
+    updateMetrics() {
+        // Update metric values with slight variations
+        const metrics = document.querySelectorAll('.metric-value');
+        metrics.forEach(metric => {
+            const currentValue = parseFloat(metric.textContent.replace(/[^0-9.]/g, ''));
+            if (currentValue) {
+                const variation = (Math.random() - 0.5) * 0.02; // ±1% variation
+                const newValue = currentValue * (1 + variation);
+                
+                if (metric.textContent.includes('R$')) {
+                    metric.textContent = `R$ ${newValue.toLocaleString('pt-BR', {minimumFractionDigits: 0})}`;
+                } else if (metric.textContent.includes('m³')) {
+                    metric.textContent = `${Math.floor(newValue).toLocaleString('pt-BR')} m³`;
+                } else if (metric.textContent.includes('%')) {
+                    metric.textContent = `${newValue.toFixed(1)}%`;
                 }
             }
         });
-
-        // Gráfico de fluxo de caixa
-        const cashFlowCtx = document.getElementById('cashFlowChart').getContext('2d');
-        this.charts.cashFlow = new Chart(cashFlowCtx, {
-            type: 'bar',
-            data: {
-                labels: [],
-                datasets: [
-                    {
-                        label: 'Receita',
-                        data: [],
-                        backgroundColor: '#43e97b'
-                    },
-                    {
-                        label: 'Despesas',
-                        data: [],
-                        backgroundColor: '#f093fb'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return 'R$ ' + value.toLocaleString('pt-BR');
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // Gráfico de manutenção
-        const maintenanceCtx = document.getElementById('maintenanceChart').getContext('2d');
-        this.charts.maintenance = new Chart(maintenanceCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
-                datasets: [{
-                    data: [],
-                    backgroundColor: [
-                        '#ff6b6b',
-                        '#4ecdc4',
-                        '#45b7d1',
-                        '#96ceb4',
-                        '#ffeaa7',
-                        '#dda0dd'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
-
-        // Gráfico de vendas vs metas
-        const salesTargetCtx = document.getElementById('salesTargetChart').getContext('2d');
-        this.charts.salesTarget = new Chart(salesTargetCtx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
-                datasets: [
-                    {
-                        label: 'Vendas Realizadas',
-                        data: [],
-                        borderColor: '#4facfe',
-                        backgroundColor: 'rgba(79, 172, 254, 0.1)',
-                        tension: 0.4
-                    },
-                    {
-                        label: 'Meta Mensal',
-                        data: [],
-                        borderColor: '#43e97b',
-                        backgroundColor: 'rgba(67, 233, 123, 0.1)',
-                        borderDash: [5, 5],
-                        tension: 0.4
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return 'R$ ' + value.toLocaleString('pt-BR');
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    updateCharts() {
-        // Atualizar gráfico de custo de produção
-        this.charts.productionCost.data.datasets[0].data = this.data.costs.monthlyData;
-        this.charts.productionCost.update();
-
-        // Atualizar gráfico de fluxo de caixa
-        this.charts.cashFlow.data.labels = this.data.cashFlow.labels;
-        this.charts.cashFlow.data.datasets[0].data = this.data.cashFlow.income;
-        this.charts.cashFlow.data.datasets[1].data = this.data.cashFlow.expenses;
-        this.charts.cashFlow.update();
-
-        // Atualizar gráfico de manutenção
-        this.charts.maintenance.data.datasets[0].data = this.data.maintenance.monthly;
-        this.charts.maintenance.update();
-
-        // Atualizar gráfico de vendas vs metas
-        const monthlyTarget = this.data.sales.financialTarget / 12;
-        this.charts.salesTarget.data.datasets[0].data = this.data.sales.monthlyData;
-        this.charts.salesTarget.data.datasets[1].data = new Array(6).fill(monthlyTarget);
-        this.charts.salesTarget.update();
-    }
-
-    exportReport() {
-        const reportData = {
-            timestamp: new Date().toISOString(),
-            stock: this.data.stock,
-            financial: {
-                costPerTon: this.data.costs.costPerTon,
-                roi: this.data.roi.current,
-                activeLoans: this.data.roi.activeLoans,
-                expectedReturn: this.data.roi.expectedReturn
-            },
-            equipment: this.data.equipment,
-            sales: this.data.sales
-        };
-
-        const blob = new Blob([JSON.stringify(reportData, null, 2)], 
-            { type: 'application/json' });
-        
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `relatorio-pedreira-${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
     }
 }
 
-// Inicializar sistema quando a página carregar
+// Initialize the system when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     new QuarryManagementSystem();
 });
+
+// Add some utility functions for enhanced interactions
+function addRippleEffect(element) {
+    element.addEventListener('click', function(e) {
+        const ripple = document.createElement('span');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+        
+        ripple.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            left: ${x}px;
+            top: ${y}px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: scale(0);
+            animation: ripple 0.6s ease-out;
+        `;
+        
+        this.style.position = 'relative';
+        this.style.overflow = 'hidden';
+        this.appendChild(ripple);
+        
+        setTimeout(() => {
+            ripple.remove();
+        }, 600);
+    });
+}
+
+// Add ripple effects to buttons
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.btn-primary, .btn-secondary').forEach(addRippleEffect);
+});
+
+// Add ripple animation CSS
+const rippleCSS = `
+@keyframes ripple {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+`;
+
+const style = document.createElement('style');
+style.textContent = rippleCSS;
+document.head.appendChild(style);
