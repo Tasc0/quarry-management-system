@@ -881,3 +881,151 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--gray-500);
 }
+
+
+/* Chart Container Fixes - Prevent overflow and excessive scrolling */
+.chart-container,
+.charts-wrapper,
+.dashboard-charts {
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Individual Chart Fixes */
+.chart,
+.chart-item,
+.graph-container {
+  width: 100%;
+  max-width: 100%;
+  height: 400px;
+  max-height: 400px;
+  overflow: hidden;
+  box-sizing: border-box;
+  margin-bottom: 20px;
+}
+
+/* Chart Canvas and SVG Elements */
+.chart canvas,
+.chart svg,
+.graph-container canvas,
+.graph-container svg {
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: 380px !important;
+}
+
+/* Chart.js Specific Fixes */
+.chart-responsive {
+  position: relative;
+  height: 400px;
+  max-height: 400px;
+  overflow: hidden;
+}
+
+.chart-responsive canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: auto;
+}
+
+/* Dashboard Grid Layout Fixes */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Quarry Management Specific Chart Fixes */
+.production-charts,
+.equipment-charts,
+.safety-charts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.production-charts .chart,
+.equipment-charts .chart,
+.safety-charts .chart {
+  flex: 1 1 calc(50% - 10px);
+  min-width: 300px;
+  max-width: calc(50% - 10px);
+  height: 350px;
+  max-height: 350px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .chart,
+  .chart-item,
+  .graph-container {
+    height: 300px;
+    max-height: 300px;
+  }
+  
+  .production-charts .chart,
+  .equipment-charts .chart,
+  .safety-charts .chart {
+    flex: 1 1 100%;
+    max-width: 100%;
+    height: 280px;
+    max-height: 280px;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+}
+
+/* Prevent Chart Overflow in Tables */
+.chart-table-container {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.chart-table-container table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+/* Fix Chart Legends */
+.chart-legend {
+  max-height: 100px;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+
+/* Chart Loading States */
+.chart-loading {
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+}
+
+/* Scrollbar Styling for Chart Containers */
+.chart-container::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.chart-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.chart-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+/* End Chart Fixes */
